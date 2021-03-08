@@ -180,7 +180,7 @@ void vibrate() {
 }
 
 void playsound() {
-	fprintf(stderr, "Playing audio...\n");
+	if (debug) fprintf(stderr, "Playing audio...\n");
 	SDL_AudioDeviceID device_id = SDL_OpenAudioDevice(NULL, 0, &wavspec, NULL, 0);
 	if (SDL_QueueAudio(device_id, wavbuffer, wavlength) != 0) {
 		fprintf(stderr, "QueueAudio failed\n");
