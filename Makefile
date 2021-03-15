@@ -5,7 +5,7 @@ PROGRAMS = clickclack
 all: $(PROGRAMS)
 
 clickclack: clickclack.c
-	gcc -l SDL2 -o clickclack clickclack.c
+	gcc -o clickclack clickclack.c -l SDL2
 
 clean:
 	rm -f clickclack
