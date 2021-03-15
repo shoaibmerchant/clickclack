@@ -36,7 +36,7 @@ void vibrate();
 void usage() {
 	fprintf(stderr, "Usage: clickclack [options]\n");
 	fprintf(stderr, "Options:\n");
-	fprintf(stderr, " -v         enable vibration\n");
+	fprintf(stderr, " -V         enable vibration\n");
 	fprintf(stderr, " -s [int]   vibration strength\n");
 	fprintf(stderr, " -d [int]   vibration duration in ms\n");
 	fprintf(stderr, " -f [file]  audio file to play\n");
@@ -57,7 +57,7 @@ int main(int argc, char* argv[])
 	for (i = 1; argv[i]; i++) {
 		if (!strcmp(argv[i], "-f")) {
 			audiofile = strdup(argv[++i]);
-		} else if (!strcmp(argv[i], "-v")) {
+		} else if (!strcmp(argv[i], "-V")) {
 			vibration = 1;
 		} else if (!strcmp(argv[i], "-s")) {
 			vibration = 1;
