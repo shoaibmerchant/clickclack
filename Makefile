@@ -11,5 +11,5 @@ clean:
 	rm -f clickclack
 
 install: $(PROGRAMS)
-	install -D -m 0755 clickclack $(DESTDIR)$(PREFIX)/bin/
+	install -D -m 0755 clickclack $(DESTDIR)$(PREFIX)/bin/clickclack
 
