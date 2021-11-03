@@ -22,6 +22,7 @@ static int echo = 0;
 static char *audiofile = NULL;
 static int audioduration = 95; //in milliseconds
 static int debug = 0;
+static int utf8 = 1;
 
 const int MIN_INTERVAL = 100; //minimal interval between two feedback actions in milliseconds
                               //if input comes in faster than this it will not trigger
@@ -43,12 +44,12 @@ void usage() {
 	fprintf(stderr, " -t [int]   audio file duration in ms\n");
 	fprintf(stderr, " -D         Debug mode\n");
 	fprintf(stderr, " -e         echo input to output\n");
+	fprintf(stderr, " -a         ASCII-mode, disables utf-8 handling\n");
 }
 
 SDL_AudioSpec wavspec;
 uint32_t wavlength;
 uint8_t *wavbuffer;
-
 
 int main(int argc, char* argv[])
 {
@@ -73,6 +74,8 @@ int main(int argc, char* argv[])
 			usage(argv[0]);
 		} else if (!strcmp(argv[i], "-D")) {
 			debug = 1;
+		} else if (!strcmp(argv[i], "-a")) {
+			utf8 = 0;
 		} else {
 			fprintf(stderr, "Invalid argument: %s\n", argv[i]);
 			exit(2);
@@ -101,6 +104,7 @@ int main(int argc, char* argv[])
 	int maxfd = STDIN_FILENO;
 	struct timeval now, last;
 	double interval;
+	int skip = 0;
 	while (1) {
 		FD_ZERO(&fds);
 		FD_SET(STDIN_FILENO, &fds);
@@ -109,15 +113,52 @@ int main(int argc, char* argv[])
 		if (FD_ISSET(STDIN_FILENO, &fds)) {
 			if (feof(stdin)) break;
 			c = getchar();
-			if (c > 0) {
-				gettimeofday(&now, NULL);
-				interval = (double)(now.tv_usec - last.tv_usec) / 1000000 + (double)(now.tv_sec - last.tv_sec);
-				last = now;
-				if (debug) fprintf(stderr, "interval=%f, char=%d\n", interval, c);
-				if (echo) putchar(c);
-				if ((interval < 0) || (interval > (double) MIN_INTERVAL / 1000)) {
-					if (vibration) vibrate();
-					if (audiofile != NULL) playsound();
+			if (c != EOF) {
+				if (skip == 0) {
+					//simple utf-8 parser
+					if (utf8) {
+						if (c >> 7 == 0) {
+							skip = 0;
+							if (c < 0x21 && c != 0x0a && c != 0x20) {
+								//do not emit on control characters (except newline, space, tab, and backspace)
+								if (debug) fprintf(stderr, "skipping control char\n");
+								if (echo) putchar(c);
+								continue;
+							}
+						} else if (c >> 5 == -0b10) {
+							skip = 1;
+						} else if (c >> 4 == -0b110) {
+							skip = 2;
+						} else if (c >> 3 == -0b1110) {
+							skip = 3;
+						} else {
+							//invalid utf-8
+							skip = 0;
+							if (debug) fprintf(stderr, "invalid utf-8 char=%d (first)\n", c);
+							if (echo) putchar(c);
+							continue;
+						}
+					}
+
+					gettimeofday(&now, NULL);
+					interval = (double)(now.tv_usec - last.tv_usec) / 1000000 + (double)(now.tv_sec - last.tv_sec);
+					last = now;
+					if (debug) fprintf(stderr, "interval=%f, char=%d (emitted)\n", interval, c);
+					if (echo) putchar(c);
+					if ((interval < 0) || (interval > (double) MIN_INTERVAL / 1000)) {
+						if (vibration) vibrate();
+						if (audiofile != NULL) playsound();
+					}
+				} else {
+					if (c >> 6 != -0b10) {
+						//invalid utf-8, reset
+						skip = 0;
+						if (debug) fprintf(stderr, "invalid utf-8 char=%d (cont)\n", c);
+						continue;
+					}
+					if (debug) fprintf(stderr, "char=%d skip=%d (not emitted)\n", c, skip);
+					if (echo) putchar(c);
+					skip--;
 				}
 			}
 		}
