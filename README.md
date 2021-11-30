@@ -32,7 +32,12 @@ Clickclack Options:
 Virtual keyboards [svkbd](https://tools.suckless.org/x/svkbd/) and [wvkbd](https://github.com/jjsullivan5196/wvkbd) have an extra output mode where all keypresses are printed to standard output. This allows us
 to use clickclack with it as follows:
 
-	$ svkbd-mobile-intl -o | clickclack -V -f keypress.wav
+	$ svkbd-mobile-intl -o | clickclack -V -f keytap.wav
+
+The following audio clips well with clicklack:
+
+* [subtle tap](https://download.anaproy.nl/keytap.wav)
+* [mechanical keyboard keypress](https://download.anaproy.nl/keypress.wav)
 
 Notes
 ---------
