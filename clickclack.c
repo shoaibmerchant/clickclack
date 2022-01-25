@@ -23,6 +23,7 @@ static char *audiofile = NULL;
 static int audioduration = 95; //in milliseconds
 static int debug = 0;
 static int utf8 = 1;
+static int firstonly = 0;
 
 const int MIN_INTERVAL = 100; //minimal interval between two feedback actions in milliseconds
                               //if input comes in faster than this it will not trigger
@@ -45,6 +46,7 @@ void usage() {
 	fprintf(stderr, " -D         Debug mode\n");
 	fprintf(stderr, " -e         echo input to output\n");
 	fprintf(stderr, " -a         ASCII-mode, disables utf-8 handling\n");
+	fprintf(stderr, " -o         trigger vibration only on first character of the line\n");
 }
 
 SDL_AudioSpec wavspec;
@@ -76,6 +78,8 @@ int main(int argc, char* argv[])
 			debug = 1;
 		} else if (!strcmp(argv[i], "-a")) {
 			utf8 = 0;
+		} else if (!strcmp(argv[i], "-o")) {
+			firstonly = 1;
 		} else {
 			fprintf(stderr, "Invalid argument: %s\n", argv[i]);
 			exit(2);
@@ -97,7 +101,7 @@ int main(int argc, char* argv[])
 //	int flags = fcntl(fd, F_GETFL, 0);
 //	fcntl(STDIN_FILENO, F_SETFL, flags | O_NONBLOCK);
 
-	char c;
+	char c = '\n';
 
 
 	fd_set fds;
@@ -112,6 +116,7 @@ int main(int argc, char* argv[])
 
 		if (FD_ISSET(STDIN_FILENO, &fds)) {
 			if (feof(stdin)) break;
+			if (firstonly && c!='\n' && skip==0) skip = 1;
 			c = getchar();
 			if (c != EOF) {
 				if (skip == 0) {
@@ -150,7 +155,7 @@ int main(int argc, char* argv[])
 						if (audiofile != NULL) playsound();
 					}
 				} else {
-					if (c >> 6 != -0b10) {
+					if (c >> 6 != -0b10 && !firstonly) {
 						//invalid utf-8, reset
 						skip = 0;
 						if (debug) fprintf(stderr, "invalid utf-8 char=%d (cont)\n", c);
