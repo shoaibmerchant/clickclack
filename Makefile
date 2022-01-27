@@ -2,10 +2,12 @@ PREFIX:=/usr
 
 PROGRAMS = clickclack
 
+CFLAGS ?= -O2
+
 all: $(PROGRAMS)
 
 clickclack: clickclack.c
-	gcc -o clickclack clickclack.c -l SDL2
+	gcc $(CFLAGS) -o clickclack clickclack.c -l SDL2
 
 clean:
 	rm -f clickclack
