@@ -28,6 +28,7 @@ Clickclack Options:
 * ``-d`` *(integer)* - Vibration duration in milliseconds (defaults to 95 milliseconds)
 * ``-D`` - Debug mode
 * ``-e`` - Echo input to output (allows further chaining of tools)
+* ``-o`` - Vibrate/play sound only on the first character of the line. To be used in combination with the wvkbd -O option.
 
 Virtual keyboards [svkbd](https://tools.suckless.org/x/svkbd/) and [wvkbd](https://github.com/jjsullivan5196/wvkbd) have an extra output mode where all keypresses are printed to standard output. This allows us
 to use clickclack with it as follows:
