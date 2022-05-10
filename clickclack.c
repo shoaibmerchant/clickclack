@@ -74,6 +74,7 @@ int main(int argc, char* argv[])
 			echo = 1;
 		} else if (!strcmp(argv[i], "-h")) {
 			usage(argv[0]);
+			exit(0);
 		} else if (!strcmp(argv[i], "-D")) {
 			debug = 1;
 		} else if (!strcmp(argv[i], "-a")) {
