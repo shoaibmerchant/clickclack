@@ -35,8 +35,8 @@ extern int errno;
 void playsound();
 void vibrate();
 
-void usage() {
-	fprintf(stderr, "Usage: clickclack [options]\n");
+void usage(char* program) {
+	fprintf(stderr, "Usage: %s [options]\n", program);
 	fprintf(stderr, "Options:\n");
 	fprintf(stderr, " -V         enable vibration\n");
 	fprintf(stderr, " -s [int]   vibration strength\n");
