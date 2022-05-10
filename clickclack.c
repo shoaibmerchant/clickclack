@@ -15,6 +15,7 @@
 #include <SDL2/SDL_audio.h>
 
 
+char *vibra_event_dev = "/dev/input/by-path/platform-vibrator-event";
 static int vibration = 0;
 static int strength = 4000;
 static int duration = 95; //in milliseconds
@@ -39,6 +40,7 @@ void usage(char* program) {
 	fprintf(stderr, "Usage: %s [options]\n", program);
 	fprintf(stderr, "Options:\n");
 	fprintf(stderr, " -V         enable vibration\n");
+	fprintf(stderr, " -E [file]  path to vibrator device event file\n");
 	fprintf(stderr, " -s [int]   vibration strength\n");
 	fprintf(stderr, " -d [int]   vibration duration in ms\n");
 	fprintf(stderr, " -f [file]  audio file to play\n");
@@ -55,11 +57,18 @@ uint8_t *wavbuffer;
 
 int main(int argc, char* argv[])
 {
+	/* set vibrator device event file from env */
+	char *tmp;
+	if ((tmp = getenv("SXMO_VIBRATE_DEV")))
+		vibra_event_dev = strdup(tmp);
+
 	/* parse command line arguments */
 	int fd, i, ret;
 	for (i = 1; argv[i]; i++) {
 		if (!strcmp(argv[i], "-f")) {
 			audiofile = strdup(argv[++i]);
+		} else if (!strcmp(argv[i], "-E")) {
+			vibra_event_dev = strdup(argv[++i]);
 		} else if (!strcmp(argv[i], "-V")) {
 			vibration = 1;
 		} else if (!strcmp(argv[i], "-s")) {
@@ -184,9 +193,9 @@ void vibrate() {
 	struct pollfd pfds[1];
 	int effects;
 
-	fd = open("/dev/input/by-path/platform-vibrator-event", O_RDWR | O_CLOEXEC);
+	fd = open(vibra_event_dev, O_RDWR | O_CLOEXEC);
 	if (fd < 0) {
-		fprintf(stderr, "Error reading opening event device /dev/input/by-path/platform-vibrator-event\n");
+		fprintf(stderr, "Error reading opening event device %s\n", vibra_event_dev);
 		return;
 	}
 

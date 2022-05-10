@@ -29,6 +29,8 @@ Clickclack Options:
 * ``-D`` - Debug mode
 * ``-e`` - Echo input to output (allows further chaining of tools)
 * ``-o`` - Vibrate/play sound only on the first character of the line. To be used in combination with the wvkbd -O option.
+* ``-E`` - Vibrator device event file to use, defaults to `/dev/input/by-path/platform-vibrator-event` or value of
+	`SXMO_VIBRATE_DEV` environment variable if it's defined.
 
 Virtual keyboards [svkbd](https://tools.suckless.org/x/svkbd/) and [wvkbd](https://github.com/jjsullivan5196/wvkbd) have an extra output mode where all keypresses are printed to standard output. This allows us
 to use clickclack with it as follows:
