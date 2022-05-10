@@ -7,7 +7,7 @@ CFLAGS ?= -O2
 all: $(PROGRAMS)
 
 clickclack: clickclack.c
-	gcc $(CFLAGS) -o clickclack clickclack.c -l SDL2
+	$(CC) $(CFLAGS) -o clickclack clickclack.c -l SDL2
 
 clean:
 	rm -f clickclack
