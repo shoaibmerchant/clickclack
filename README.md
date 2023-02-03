@@ -21,7 +21,7 @@ You will want to use clickclack in combination with another tool, most likely a 
 
 Clickclack Options:
 
-* ``-f`` - A wave file to load and play, note that only the first milliseconds as specified by ``-D`` are actually
+* ``-f`` - A wave file to load and play, note that only the first milliseconds as specified by ``-d`` are actually
 	played.
 * ``-V`` - Enable vibration (requires a vibration motor)
 * ``-t`` *(integer)* - Audio file duration in milliseconds (defaults to 95 milliseconds), the rest will be clipped!
