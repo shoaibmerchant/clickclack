@@ -1,16 +1,15 @@
+#include <errno.h>
+#include <fcntl.h>
+#include <poll.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdarg.h>
-#include <stdbool.h>
-#include <errno.h>
 #include <time.h>
-#include <fcntl.h>
-#include <poll.h>
 #include <unistd.h>
-#include <errno.h>
-#include <sys/ioctl.h>
+
 #include <linux/input.h>
+#include <sys/ioctl.h>
+
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_audio.h>
 
@@ -32,10 +31,6 @@ static int firstonly = 0;
 const int MIN_INTERVAL = 100; //minimal interval between two feedback actions in milliseconds
                               //if input comes in faster than this it will not trigger
 							  //an action
-
-
-extern int errno;
-
 
 static SDL_AudioSpec wavspec;
 static uint32_t wavlength;
