@@ -20,17 +20,20 @@ static void vibrate();
 static char *vibra_event_dev = "/dev/input/by-path/platform-vibrator-event";
 static int vibration = 0;
 static int strength = 4000;
-static int duration = 95; //in milliseconds
+static int duration = 95; /* in milliseconds */
 static int echo = 0;
 static char *audiofile = NULL;
-static int audioduration = 95; //in milliseconds
+static int audioduration = 95; /* in milliseconds */
 static int debug = 0;
 static int utf8 = 1;
 static int firstonly = 0;
 
-const int MIN_INTERVAL = 100; //minimal interval between two feedback actions in milliseconds
-                              //if input comes in faster than this it will not trigger
-							  //an action
+/*
+ * MIN_INTERVAL
+ * The minimum interval between two feedback actions in milliseconds.
+ * If the input comes in faster than this it will not trigger an action.
+ */
+const int MIN_INTERVAL = 100;
 
 static SDL_AudioSpec wavspec;
 static uint32_t wavlength;
