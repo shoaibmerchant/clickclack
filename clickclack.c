@@ -78,11 +78,13 @@ vibrate()
 	fd = open(vibra_event_dev, O_RDWR | O_CLOEXEC);
 	if (fd < 0) {
 		fprintf(stderr, "Error reading opening event device %s\n", vibra_event_dev);
+		perror("open");
 		return;
 	}
 
 	if (ioctl(fd, EVIOCGEFFECTS, &effects) < 0) {
 		fprintf(stderr, "EVIOCGEFFECTS failed\n");
+		perror("ioctl");
 		close(fd);
 		return;
 	}
@@ -95,13 +97,14 @@ vibrate()
 
 	if (ioctl(fd, EVIOCSFF, &e) < 0) {
 		fprintf(stderr, "EVIOCSFF failed\n");
+		perror("ioctl");
 		close(fd);
 		return;
 	}
 
 	struct input_event play = { .type = EV_FF, .code = e.id, .value = 3 };
 	if (write(fd, &play, sizeof play) < 0) {
-		fprintf(stderr, "write failed\n");
+		perror("write");
 		close(fd);
 		return;
 	}
@@ -110,6 +113,7 @@ vibrate()
 
 	if (ioctl(fd, EVIOCRMFF, e.id) < 0) {
 		fprintf(stderr, "EVIOCRMFF failed\n");
+		perror("ioctl");
 		close(fd);
 		return;
 	}
