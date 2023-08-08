@@ -1,8 +1,10 @@
-PREFIX:=/usr
+.POSIX:
+.SUFFIXES:
+
+PREFIX ?= /usr/local
+MANPREFIX ?= $(PREFIX)/man # unused
 
 PROGRAMS = clickclack
-
-CFLAGS ?= -O2
 
 all: $(PROGRAMS)
 
