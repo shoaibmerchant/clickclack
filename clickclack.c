@@ -14,8 +14,11 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_audio.h>
 
+static void playsound();
+static void usage(char *program);
+static void vibrate();
 
-char *vibra_event_dev = "/dev/input/by-path/platform-vibrator-event";
+static char *vibra_event_dev = "/dev/input/by-path/platform-vibrator-event";
 static int vibration = 0;
 static int strength = 4000;
 static int duration = 95; //in milliseconds
@@ -33,10 +36,29 @@ const int MIN_INTERVAL = 100; //minimal interval between two feedback actions in
 
 extern int errno;
 
-void playsound();
-void vibrate();
 
-void usage(char* program) {
+static SDL_AudioSpec wavspec;
+static uint32_t wavlength;
+static uint8_t *wavbuffer;
+
+static void
+playsound()
+{
+	if (debug) fprintf(stderr, "Playing audio...\n");
+	SDL_AudioDeviceID device_id = SDL_OpenAudioDevice(NULL, 0, &wavspec, NULL, 0);
+	if (SDL_QueueAudio(device_id, wavbuffer, wavlength) != 0) {
+		fprintf(stderr, "QueueAudio failed\n");
+		SDL_CloseAudioDevice(device_id);
+		return;
+	}
+	SDL_PauseAudioDevice(device_id, 0); //unpause aka play
+	SDL_Delay(audioduration);
+	SDL_CloseAudioDevice(device_id);
+}
+
+static void
+usage(char *program)
+{
 	fprintf(stderr, "Usage: %s [options]\n", program);
 	fprintf(stderr, "Options:\n");
 	fprintf(stderr, " -V         enable vibration\n");
@@ -51,11 +73,57 @@ void usage(char* program) {
 	fprintf(stderr, " -o         trigger vibration only on first character of the line\n");
 }
 
-SDL_AudioSpec wavspec;
-uint32_t wavlength;
-uint8_t *wavbuffer;
+static void
+vibrate()
+{
+	int fd, ret;
+	struct pollfd pfds[1];
+	int effects;
 
-int main(int argc, char* argv[])
+	fd = open(vibra_event_dev, O_RDWR | O_CLOEXEC);
+	if (fd < 0) {
+		fprintf(stderr, "Error reading opening event device %s\n", vibra_event_dev);
+		return;
+	}
+
+	if (ioctl(fd, EVIOCGEFFECTS, &effects) < 0) {
+		fprintf(stderr, "EVIOCGEFFECTS failed\n");
+		close(fd);
+		return;
+	}
+
+	struct ff_effect e = {
+					.type = FF_RUMBLE,
+					.id = -1,
+					.u.rumble = { .strong_magnitude = strength },
+	};
+
+	if (ioctl(fd, EVIOCSFF, &e) < 0) {
+		fprintf(stderr, "EVIOCSFF failed\n");
+		close(fd);
+		return;
+	}
+
+	struct input_event play = { .type = EV_FF, .code = e.id, .value = 3 };
+	if (write(fd, &play, sizeof play) < 0) {
+		fprintf(stderr, "write failed\n");
+		close(fd);
+		return;
+	}
+
+	usleep(duration * 1000);
+
+	if (ioctl(fd, EVIOCRMFF, e.id) < 0) {
+		fprintf(stderr, "EVIOCRMFF failed\n");
+		close(fd);
+		return;
+	}
+
+	close(fd);
+}
+
+int
+main(int argc, char* argv[])
 {
 	/* set vibrator device event file from env */
 	char *tmp;
@@ -186,64 +254,4 @@ int main(int argc, char* argv[])
 	}
 
 	return 0;
-}
-
-void vibrate() {
-	int fd, ret;
-	struct pollfd pfds[1];
-	int effects;
-
-	fd = open(vibra_event_dev, O_RDWR | O_CLOEXEC);
-	if (fd < 0) {
-		fprintf(stderr, "Error reading opening event device %s\n", vibra_event_dev);
-		return;
-	}
-
-	if (ioctl(fd, EVIOCGEFFECTS, &effects) < 0) {
-		fprintf(stderr, "EVIOCGEFFECTS failed\n");
-		close(fd);
-		return;
-	}
-
-	struct ff_effect e = {
-					.type = FF_RUMBLE,
-					.id = -1,
-					.u.rumble = { .strong_magnitude = strength },
-	};
-
-	if (ioctl(fd, EVIOCSFF, &e) < 0) {
-		fprintf(stderr, "EVIOCSFF failed\n");
-		close(fd);
-		return;
-	}
-
-	struct input_event play = { .type = EV_FF, .code = e.id, .value = 3 };
-	if (write(fd, &play, sizeof play) < 0) {
-		fprintf(stderr, "write failed\n");
-		close(fd);
-		return;
-	}
-
-	usleep(duration * 1000);
-
-	if (ioctl(fd, EVIOCRMFF, e.id) < 0) {
-		fprintf(stderr, "EVIOCRMFF failed\n");
-		close(fd);
-		return;
-	}
-
-	close(fd);
-}
-
-void playsound() {
-	if (debug) fprintf(stderr, "Playing audio...\n");
-	SDL_AudioDeviceID device_id = SDL_OpenAudioDevice(NULL, 0, &wavspec, NULL, 0);
-	if (SDL_QueueAudio(device_id, wavbuffer, wavlength) != 0) {
-		fprintf(stderr, "QueueAudio failed\n");
-		SDL_CloseAudioDevice(device_id);
-		return;
-	}
-	SDL_PauseAudioDevice(device_id, 0); //unpause aka play
-	SDL_Delay(audioduration);
-	SDL_CloseAudioDevice(device_id);
 }
